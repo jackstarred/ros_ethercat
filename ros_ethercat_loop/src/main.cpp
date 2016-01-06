@@ -58,6 +58,7 @@ using std::vector;
 using std::accumulate;
 using realtime_tools::RealtimePublisher;
 
+#include <boost/lexical_cast.hpp>
 static struct
 {
   char *program_;
@@ -312,6 +313,20 @@ void *controlLoop(void *)
   // Initialize the hardware interface
   ros::NodeHandle nh;
   RosEthercat seth(nh, g_options.interface_, g_options.allow_unprogrammed_, root);
+
+  for(size_t i = 0; i < seth.ethercat_hardware_.size(); ++i)
+  {
+    fprintf(stderr, " NUMBER OF SLAVES: %ld", seth.ethercat_hardware_[i].slaves_.size());
+    for(size_t j=0; j < seth.ethercat_hardware_[i].slaves_.size(); ++j)
+    {
+      std::string serial = boost::lexical_cast<std::string>(seth.ethercat_hardware_[i].slaves_[j]->sh_->get_serial());
+      std::string prod_code = boost::lexical_cast<std::string>(seth.ethercat_hardware_[i].slaves_[j]->sh_->get_product_code());
+
+      fprintf(stderr, "  serial: %s, product code: %s", serial.c_str(), prod_code.c_str());
+    }
+
+  }
+
 
   // Create controller manager
   controller_manager::ControllerManager cm(&seth);
@@ -634,7 +649,9 @@ int main(int argc, char *argv[])
   if (!g_options.interface_)
     Usage("You must specify a network interface");
   if (!g_options.rosparam_)
-    Usage("You must specify a rosparam for robot description");
+  {
+    fprintf(stderr, "No rosparam specified for the robot description, will try to load them dynamically based on the ethercat serial ids.");
+  }
 
   // EtherCAT lock for this interface (e.g. Ethernet port)
   if (setupPidFile(g_options.interface_) < 0)

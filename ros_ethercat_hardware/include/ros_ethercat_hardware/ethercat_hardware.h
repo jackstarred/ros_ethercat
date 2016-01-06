@@ -276,8 +276,9 @@ private:
   EtherCAT_AL *application_layer_;
   EtherCAT_Router *m_router_;
   EtherCAT_Master *ethercat_master_;
-
+public:
   std::vector<boost::shared_ptr<EthercatDevice> > slaves_;
+private:
   unsigned int num_ethercat_devices_;
 
   unsigned char *this_buffer_;
