@@ -89,6 +89,20 @@ public:
     cm_node_(nh, "ethercat_controller_manager"),
     model_(config)
   {
+    for(size_t i = 0; i < ethercat_hardware_.size(); ++i)
+    {
+      fprintf(stderr, " NUMBER OF SLAVES: %ld", ethercat_hardware_[i].slaves_.size());
+      for(size_t j=0; j < ethercat_hardware_[i].slaves_.size(); ++j)
+      {
+        std::string serial = boost::lexical_cast<std::string>(ethercat_hardware_[i].slaves_[j]->sh_->get_serial());
+        std::string prod_code = boost::lexical_cast<std::string>(ethercat_hardware_[i].slaves_[j]->sh_->get_product_code());
+
+        fprintf(stderr, "  serial: %s, product code: %s", serial.c_str(), prod_code.c_str());
+      }
+
+    }
+
+
     vector<string> port_names;
     boost::split(port_names, eth, boost::is_any_of("_, "));
     for (vector<string>::const_iterator port_name = port_names.begin();

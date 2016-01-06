@@ -314,19 +314,6 @@ void *controlLoop(void *)
   ros::NodeHandle nh;
   RosEthercat seth(nh, g_options.interface_, g_options.allow_unprogrammed_, root);
 
-  for(size_t i = 0; i < seth.ethercat_hardware_.size(); ++i)
-  {
-    fprintf(stderr, " NUMBER OF SLAVES: %ld", seth.ethercat_hardware_[i].slaves_.size());
-    for(size_t j=0; j < seth.ethercat_hardware_[i].slaves_.size(); ++j)
-    {
-      std::string serial = boost::lexical_cast<std::string>(seth.ethercat_hardware_[i].slaves_[j]->sh_->get_serial());
-      std::string prod_code = boost::lexical_cast<std::string>(seth.ethercat_hardware_[i].slaves_[j]->sh_->get_product_code());
-
-      fprintf(stderr, "  serial: %s, product code: %s", serial.c_str(), prod_code.c_str());
-    }
-
-  }
-
 
   // Create controller manager
   controller_manager::ControllerManager cm(&seth);
