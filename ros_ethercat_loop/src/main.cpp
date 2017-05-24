@@ -46,11 +46,37 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <numeric>
+#include <stdio.h>
+
+#include <execinfo.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "ros_ethercat_model/ros_ethercat.hpp"
 #include <controller_manager/controller_manager.h>
 #include <std_msgs/Float64.h>
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
+
+
+void handler(int sig) {
+  void *array[10];
+  size_t size;
+  char **trace;
+  // get void*'s for all entries on the stack
+  size = backtrace(array, 10);
+
+  // print out all the frames to stderr
+  ROS_WARN("Error: signal %d:\n", sig);
+  trace = backtrace_symbols(array, size);
+  for (size_t x = 0; x < size; ++x)
+  {
+      ROS_WARN("%s", trace[x]);
+  }
+
+  exit(1);
+}
+
 
 using namespace boost::accumulators;
 using boost::ptr_vector;
@@ -360,6 +386,10 @@ void *controlLoop(void *)
     seth.write(this_moment, durp);
     double end = now();
 
+
+    int *foo = (int*)-1; // make a bad pointer
+    printf("%d\n", *foo);       // causes segfaullt
+
     g_stats.ec_acc(after_ec - start);
     g_stats.cm_acc(end - after_ec);
 
@@ -576,6 +606,7 @@ static pthread_attr_t controlThreadAttr;
 
 int main(int argc, char *argv[])
 {
+  signal(SIGSEGV, handler);
   // Keep the kernel from swapping us out
   if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
   {
@@ -665,4 +696,3 @@ int main(int argc, char *argv[])
 
   return rv;
 }
-
