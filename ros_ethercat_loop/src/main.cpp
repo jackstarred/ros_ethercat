@@ -48,15 +48,16 @@
 #include <numeric>
 #include <stdio.h>
 
-#include <execinfo.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 #include "ros_ethercat_model/ros_ethercat.hpp"
 #include <controller_manager/controller_manager.h>
 #include <std_msgs/Float64.h>
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
+
+#include <execinfo.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 
 void handler(int sig) {
@@ -292,6 +293,9 @@ static void* terminate_control(RealtimePublisher<diagnostic_msgs::DiagnosticArra
 
 void *controlLoop(void *)
 {
+  int *foo = (int*)-1; // make a bad pointer
+  printf("%d\n", *foo);       // causes segfaullt
+
   double last_published, last_loop_start;
   int policy;
   TiXmlElement *root;
@@ -385,10 +389,6 @@ void *controlLoop(void *)
     cm.update(this_moment, durp);
     seth.write(this_moment, durp);
     double end = now();
-
-
-    int *foo = (int*)-1; // make a bad pointer
-    printf("%d\n", *foo);       // causes segfaullt
 
     g_stats.ec_acc(after_ec - start);
     g_stats.cm_acc(end - after_ec);
